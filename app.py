@@ -1,14 +1,19 @@
-import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from emotion_detection import detect_emotion_and_respond
-from config import Config
+import os
 
 app = Flask(__name__)
-app.config.from_object(Config)
+
+# Secret key for sessions - Render will override this with environment variable
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-secret-key-change-this')
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
@@ -459,11 +464,13 @@ def users():
     return render_template('users.html', users=all_users)
 
 # -------------------------------------------------------------------
-# Run App
+# Run App - IMPORTANT: This is the fixed part for Render!
 # -------------------------------------------------------------------
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    port = int(os.environ.get('PORT', 5000))
+    # Get port from Render's environment variable or use 10000 as default
+    port = int(os.environ.get('PORT', 10000))
+    # Bind to 0.0.0.0 to allow external connections
     app.run(host='0.0.0.0', port=port)
