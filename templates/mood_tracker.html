@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto;">
+    
+    <!-- Header -->
+    <div style="background: white; border-radius: 40px; padding: 30px; text-align: center; box-shadow: 0 20px 40px rgba(183, 110, 121, 0.15); margin-bottom: 30px;">
+        <h1 style="color: #b76e79; font-size: 2.5rem; margin-bottom: 10px;">📊 Your Mood Tracker</h1>
+        <p style="color: #8f7a7a; font-size: 1.1rem;">See how your emotions have changed over time</p>
+    </div>
+
+    <!-- Chart Container -->
+    <div style="background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1); margin-bottom: 30px;">
+        <canvas id="moodChart" style="width: 100%; height: 400px;"></canvas>
+    </div>
+
+    <!-- Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+        <div style="background: white; border-radius: 25px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(183, 110, 121, 0.1);">
+            <div style="font-size: 2rem; color: #b76e79; margin-bottom: 5px;">{{ total_chats }}</div>
+            <div style="color: #8f7a7a;">Total Chats</div>
+        </div>
+        <div style="background: white; border-radius: 25px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(183, 110, 121, 0.1);">
+            <div style="font-size: 2rem; color: #b76e79; margin-bottom: 5px;">{{ unique_emotions }}</div>
+            <div style="color: #8f7a7a;">Different Emotions</div>
+        </div>
+        <div style="background: white; border-radius: 25px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(183, 110, 121, 0.1);">
+            <div style="font-size: 2rem; color: #b76e79; margin-bottom: 5px;">{{ most_common }}</div>
+            <div style="color: #8f7a7a;">Most Common</div>
+        </div>
+    </div>
+
+    <!-- Emotion Distribution Bars -->
+    <div style="background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1);">
+        <h3 style="color: #b76e79; margin-bottom: 20px;">📊 Emotion Distribution</h3>
+        
+        {% for emotion, count in emotion_counts.items() %}
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span style="color: #6b5b5b;">{{ emotion }}</span>
+                <span style="color: #b76e79;">{{ count }} time{% if count > 1 %}s{% endif %}</span>
+            </div>
+            <div style="background: #f0f0f0; height: 12px; border-radius: 6px; overflow: hidden;">
+                {% set percentage = (count / total_chats * 100) if total_chats > 0 else 0 %}
+                <div style="background: linear-gradient(90deg, #b76e79, #d48c98); width: {{ percentage }}%; height: 100%; border-radius: 6px;"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Prepare data from Flask
+    const dates = {{ dates | tojson }};
+    const emotionData = {{ emotion_data | tojson }};
+    
+    // Create the chart
+    const ctx = document.getElementById('moodChart').getContext('2d');
+    
+    // Define colors for different emotions
+    const emotionColors = {
+        'Exam Stress': '#b76e79',
+        'Work Pressure': '#d48c98',
+        'Sadness': '#a7b89e',
+        'Anxiety': '#c4d3c9',
+        'Anger/Frustration': '#e8c2c9',
+        'Burnout/Exhaustion': '#8f7a7a',
+        'Relationship Concern': '#f9eef2',
+        'Gentle Conversation': '#faf0e6'
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Emotional Journey',
+                data: emotionData,
+                borderColor: '#b76e79',
+                backgroundColor: 'rgba(183, 110, 121, 0.1)',
+                tension: 0.3,
+                fill: true,
+                pointBackgroundColor: '#b76e79',
+                pointBorderColor: 'white',
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'white',
+                    titleColor: '#b76e79',
+                    bodyColor: '#6b5b5b',
+                    borderColor: '#e8c2c9',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            return `Emotion: ${context.raw}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(183, 110, 121, 0.1)'
+                    },
+                    ticks: {
+                        color: '#8f7a7a'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#8f7a7a',
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    canvas {
+        max-height: 400px;
+    }
+</style>
+{% endblock %}

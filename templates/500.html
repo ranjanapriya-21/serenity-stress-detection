@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 100px auto; text-align: center;">
+    <div style="font-size: 6rem; margin-bottom: 20px;">🔄</div>
+    <h1 style="color: #b76e79; font-size: 3rem; margin-bottom: 20px;">500</h1>
+    <h2 style="color: #6b5b5b; margin-bottom: 20px;">Something Went Wrong</h2>
+    <p style="color: #8f7a7a; margin-bottom: 30px;">Don't worry, it's not you - it's us. We're working on fixing it.</p>
+    <a href="/" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #b76e79 0%, #d48c98 100%); color: white; text-decoration: none; border-radius: 40px; font-weight: 600; transition: all 0.3s;">
+        Try Again 🌸
+    </a>
+</div>
+
+<style>
+    a:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(183, 110, 121, 0.3);
+    }
+</style>
+{% endblock %}

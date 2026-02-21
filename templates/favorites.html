@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto;">
+    
+    <!-- Header -->
+    <div style="background: white; border-radius: 40px; padding: 30px; text-align: center; box-shadow: 0 20px 40px rgba(183, 110, 121, 0.15); margin-bottom: 30px;">
+        <h1 style="color: #b76e79; font-size: 2.5rem; margin-bottom: 10px;">⭐ Your Favorite Tips</h1>
+        <p style="color: #8f7a7a; font-size: 1.1rem;">All the gentle reminders you've saved</p>
+    </div>
+    
+    <!-- Tips by Emotion Categories -->
+    {% if tips_by_emotion %}
+        {% for emotion, tips in tips_by_emotion.items() %}
+        <div style="margin-bottom: 30px;">
+            <h3 style="color: #b76e79; margin-bottom: 15px; padding-left: 10px;">{{ emotion }}</h3>
+            
+            <div style="display: grid; gap: 15px;">
+                {% for tip in tips %}
+                <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(183, 110, 121, 0.1); border-left: 5px solid #b76e79; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1;">
+                        <p style="color: #6b5b5b; font-size: 1.1rem; margin-bottom: 8px;">{{ tip.tip_text }}</p>
+                        <div style="display: flex; gap: 15px; font-size: 0.85rem; color: #8f7a7a;">
+                            <span>📅 {{ tip.created_at.strftime('%b %d, %Y') }}</span>
+                            {% if tip.saved_from %}
+                            <span>💬 From: {{ tip.saved_from }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{{ url_for('delete_favorite', id=tip.id) }}" 
+                       onclick="return confirm('Remove this tip from favorites?')"
+                       style="color: #b76e79; text-decoration: none; padding: 8px 15px; border: 1px solid #b76e79; border-radius: 25px; font-size: 0.9rem; transition: all 0.3s; white-space: nowrap; margin-left: 15px;">
+                        🗑️ Remove
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Summary -->
+        <div style="background: #f9eef2; border-radius: 25px; padding: 20px; margin-top: 30px; text-align: center;">
+            <p style="color: #6b5b5b;">
+                🌸 You have <strong>{{ total_tips }}</strong> saved tip{% if total_tips > 1 %}s{% endif %} to help you on your journey.
+            </p>
+        </div>
+        
+    {% else %}
+        <!-- No favorites yet -->
+        <div style="background: white; border-radius: 30px; padding: 60px 30px; text-align: center; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1);">
+            <div style="font-size: 4rem; margin-bottom: 20px;">⭐</div>
+            <h3 style="color: #6b5b5b; margin-bottom: 15px;">No favorite tips yet</h3>
+            <p style="color: #8f7a7a; margin-bottom: 25px;">When you see a tip you love in chat, click the ⭐ button to save it here.</p>
+            <a href="/chat" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #b76e79 0%, #d48c98 100%); color: white; text-decoration: none; border-radius: 30px; font-weight: 600;">
+                Go to Chat 💬
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .tip-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 8px 25px rgba(183, 110, 121, 0.15);
+    }
+    
+    a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(183, 110, 121, 0.2);
+    }
+</style>
+{% endblock %}

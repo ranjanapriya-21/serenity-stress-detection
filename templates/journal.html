@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto;">
+    
+    <!-- Header -->
+    <div style="background: white; border-radius: 40px; padding: 30px; text-align: center; box-shadow: 0 20px 40px rgba(183, 110, 121, 0.15); margin-bottom: 30px;">
+        <h1 style="color: #b76e79; font-size: 2.5rem; margin-bottom: 10px;">📝 Your Personal Journal</h1>
+        <p style="color: #8f7a7a; font-size: 1.1rem;">A safe space to write your thoughts and feelings</p>
+    </div>
+    
+    <!-- Add New Entry Button -->
+    <div style="text-align: right; margin-bottom: 20px;">
+        <button onclick="showEntryForm()" style="padding: 12px 30px; background: linear-gradient(135deg, #b76e79 0%, #d48c98 100%); color: white; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+            ✍️ Write New Entry
+        </button>
+    </div>
+    
+    <!-- New Entry Form (Hidden by default) -->
+    <div id="entryForm" style="display: none; background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1); margin-bottom: 30px;">
+        <h3 style="color: #b76e79; margin-bottom: 20px;">New Journal Entry</h3>
+        
+        <form method="POST" action="{{ url_for('add_journal') }}">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #6b5b5b; font-weight: 500;">Title</label>
+                <input type="text" name="title" required style="width: 100%; padding: 12px 15px; border: 2px solid #e8c2c9; border-radius: 15px; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #6b5b5b; font-weight: 500;">How are you feeling?</label>
+                <select name="mood" style="width: 100%; padding: 12px 15px; border: 2px solid #e8c2c9; border-radius: 15px; font-size: 16px;">
+                    <option value="Happy">😊 Happy</option>
+                    <option value="Sad">😢 Sad</option>
+                    <option value="Stressed">😰 Stressed</option>
+                    <option value="Anxious">😟 Anxious</option>
+                    <option value="Calm">😌 Calm</option>
+                    <option value="Angry">😠 Angry</option>
+                    <option value="Tired">😴 Tired</option>
+                    <option value="Grateful">🙏 Grateful</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #6b5b5b; font-weight: 500;">Your thoughts</label>
+                <textarea name="content" rows="6" required style="width: 100%; padding: 15px; border: 2px solid #e8c2c9; border-radius: 15px; font-size: 16px; font-family: 'Inter', sans-serif;" placeholder="Write whatever is in your heart..."></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                <button type="button" onclick="hideEntryForm()" style="padding: 12px 30px; background: transparent; color: #b76e79; border: 2px solid #b76e79; border-radius: 30px; font-weight: 600; cursor: pointer;">
+                    Cancel
+                </button>
+                <button type="submit" style="padding: 12px 30px; background: linear-gradient(135deg, #b76e79 0%, #d48c98 100%); color: white; border: none; border-radius: 30px; font-weight: 600; cursor: pointer;">
+                    Save Entry 💾
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Journal Entries List -->
+    {% if entries %}
+        <div style="display: grid; gap: 20px;">
+            {% for entry in entries %}
+            <div style="background: white; border-radius: 25px; padding: 25px; box-shadow: 0 5px 20px rgba(183, 110, 121, 0.1); border-left: 5px solid #b76e79; transition: all 0.3s;">
+                
+                <!-- Entry Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                    <h3 style="color: #b76e79; margin: 0;">{{ entry.title }}</h3>
+                    <span style="background: #f9eef2; color: #b76e79; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;">
+                        {{ entry.mood }}
+                    </span>
+                </div>
+                
+                <!-- Date -->
+                <div style="color: #8f7a7a; font-size: 0.9rem; margin-bottom: 15px;">
+                    {{ entry.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                </div>
+                
+                <!-- Content -->
+                <div style="color: #6b5b5b; line-height: 1.8; margin-bottom: 20px; white-space: pre-line;">
+                    {{ entry.content }}
+                </div>
+                
+                <!-- Delete Button -->
+                <div style="text-align: right;">
+                    <a href="{{ url_for('delete_journal', id=entry.id) }}" 
+                       onclick="return confirm('Are you sure you want to delete this entry?')"
+                       style="color: #b76e79; text-decoration: none; font-size: 0.9rem; padding: 5px 15px; border: 1px solid #b76e79; border-radius: 20px;">
+                        🗑️ Delete
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- No entries yet -->
+        <div style="background: white; border-radius: 30px; padding: 60px 30px; text-align: center; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1);">
+            <div style="font-size: 4rem; margin-bottom: 20px;">📔</div>
+            <h3 style="color: #6b5b5b; margin-bottom: 15px;">No journal entries yet</h3>
+            <p style="color: #8f7a7a; margin-bottom: 25px;">Start writing your thoughts and feelings. This is your private space.</p>
+            <button onclick="showEntryForm()" style="padding: 15px 40px; background: linear-gradient(135deg, #b76e79 0%, #d48c98 100%); color: white; border: none; border-radius: 30px; font-weight: 600; cursor: pointer;">
+                Write Your First Entry ✍️
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function showEntryForm() {
+        document.getElementById('entryForm').style.display = 'block';
+        window.scrollTo({
+            top: document.getElementById('entryForm').offsetTop - 100,
+            behavior: 'smooth'
+        });
+    }
+    
+    function hideEntryForm() {
+        document.getElementById('entryForm').style.display = 'none';
+    }
+</script>
+
+<style>
+    .journal-entry:hover {
+        transform: translateX(5px);
+        box-shadow: 0 8px 30px rgba(183, 110, 121, 0.15);
+    }
+    
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(183, 110, 121, 0.2);
+    }
+    
+    textarea:focus, input:focus, select:focus {
+        outline: none;
+        border-color: #b76e79 !important;
+        box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.1);
+    }
+</style>
+{% endblock %}

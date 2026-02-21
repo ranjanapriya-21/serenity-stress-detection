@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="chat-container" style="max-width: 900px; margin: 30px auto; background: white; border-radius: 30px; box-shadow: 0 20px 40px rgba(183, 110, 121, 0.15); overflow: hidden;">
+    
+    <!-- Chat Header -->
+    <div style="background: linear-gradient(135deg, #f9eef2 0%, #fce9e9 100%); padding: 30px; text-align: center; border-bottom: 1px solid rgba(183, 110, 121, 0.1);">
+        <h2 style="color: #b76e79; margin-bottom: 10px;">🌸 Serenity Chat</h2>
+        <p style="color: #8f7a7a;">Talking with <strong>{{ username }}</strong> • <span id="current-date"></span></p>
+    </div>
+    
+    <!-- Stress Meter (will appear when message is sent) -->
+    <div id="stress-meter-container" style="background: white; border-radius: 20px; padding: 20px; margin: 0 20px 20px 20px; box-shadow: 0 5px 15px rgba(183, 110, 121, 0.1); display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="color: #6b5b5b; margin: 0;">📊 Current Stress Level</h4>
+            <span id="stress-level-badge" style="padding: 5px 15px; border-radius: 20px; font-weight: 600;"></span>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div style="background: #f0f0f0; height: 20px; border-radius: 10px; overflow: hidden; margin-bottom: 10px;">
+            <div id="stress-progress" style="width: 0%; height: 100%; background: linear-gradient(90deg, #a7b89e, #b76e79); border-radius: 10px; transition: width 0.5s ease;"></div>
+        </div>
+        
+        <!-- Score and Message -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span id="stress-score" style="color: #8f7a7a; font-size: 0.9rem;">Score: 0/10</span>
+            <span id="stress-message" style="color: #6b5b5b; font-style: italic;"></span>
+        </div>
+    </div>
+    
+    <!-- Chat Messages Area -->
+    <div id="chat-messages" style="height: 450px; overflow-y: auto; padding: 30px; background: linear-gradient(135deg, #ffffff 0%, #fffcf8 100%);">
+        <!-- Bot Welcome Message -->
+        <div class="message message-bot" style="margin-bottom: 20px; display: flex; flex-direction: column; align-items: flex-start;">
+            <div style="max-width: 75%; padding: 15px 20px; border-radius: 25px; background: linear-gradient(135deg, #f9eef2 0%, #fdf0f0 100%); border: 1px solid rgba(183, 110, 121, 0.15); color: #6b5b5b; border-bottom-left-radius: 8px;">
+                Hello {{ username }}, dear. I'm here to listen. What's on your mind today? You can tell me anything - I'm here for you, no judgment, just care. 🌸
+            </div>
+            <div style="font-size: 0.75rem; color: #8f7a7a; margin-top: 5px; padding-left: 10px;">Just now</div>
+        </div>
+    </div>
+    
+    <!-- Tips Container (Hidden by default) -->
+    <div id="tips-container" style="background: linear-gradient(135deg, #c4d3c9 0%, #d4e3dd 100%); border-radius: 20px; padding: 20px; margin: 20px; display: none;">
+        <h4 style="color: #6b5b5b; margin-bottom: 15px;">💝 Gentle Reminders for You</h4>
+        <ul id="tips-list" style="list-style: none; padding: 0;"></ul>
+    </div>
+    
+    <!-- Chat Input Area -->
+    <div style="display: flex; padding: 25px; background: white; border-top: 1px solid rgba(183, 110, 121, 0.1); gap: 15px;">
+        <input type="text" 
+               id="message-input" 
+               placeholder="Type your message here, dear..." 
+               autocomplete="off"
+               style="flex: 1; padding: 15px 22px; border: 2px solid #e8c2c9; border-radius: 40px; font-size: 16px; transition: all 0.3s;">
+        
+        <button id="send-btn" 
+                onclick="sendMessage()"
+                style="padding: 15px 35px; background: linear-gradient(135deg, #b76e79 0%, #d48c98 100%); color: white; border: none; border-radius: 40px; font-weight: 600; cursor: pointer; transition: all 0.3s; white-space: nowrap;">
+            Send ✨
+        </button>
+    </div>
+</div>
+
+<style>
+    .message {
+        animation: fadeIn 0.3s ease-out;
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .message-bot {
+        align-items: flex-start;
+    }
+    
+    .message-user {
+        align-items: flex-end;
+    }
+    
+    .message-user .message-bubble {
+        background: linear-gradient(135deg, #b76e79 0%, #d48c98 100%);
+        color: white;
+        border-bottom-right-radius: 8px;
+    }
+    
+    #message-input:focus {
+        outline: none;
+        border-color: #b76e79 !important;
+        box-shadow: 0 0 0 4px rgba(183, 110, 121, 0.1);
+    }
+    
+    #send-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(183, 110, 121, 0.3);
+    }
+    
+    #send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border: 3px solid rgba(183, 110, 121, 0.2);
+        border-radius: 50%;
+        border-top-color: #b76e79;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+    
+    #tips-list li {
+        padding: 10px 0;
+        padding-left: 30px;
+        position: relative;
+        color: #6b5b5b;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        list-style: none;
+    }
+    
+    #tips-list li:last-child {
+        border-bottom: none;
+    }
+    
+    #tips-list li::before {
+        content: "🌸";
+        position: absolute;
+        left: 0;
+        color: #b76e79;
+    }
+</style>
+
+<script>
+    // Display current date
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const tipsContainer = document.getElementById('tips-container');
+    const tipsList = document.getElementById('tips-list');
+    let loading = false;
+    let currentEmotion = '';
+
+    // Send message on Enter key
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message message-${sender}`;
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.style.maxWidth = '75%';
+        bubble.style.padding = '15px 20px';
+        bubble.style.borderRadius = sender === 'bot' ? '25px 25px 25px 8px' : '25px 25px 8px 25px';
+        bubble.style.background = sender === 'bot' 
+            ? 'linear-gradient(135deg, #f9eef2 0%, #fdf0f0 100%)' 
+            : 'linear-gradient(135deg, #b76e79 0%, #d48c98 100%)';
+        bubble.style.color = sender === 'bot' ? '#6b5b5b' : 'white';
+        bubble.style.border = sender === 'bot' ? '1px solid rgba(183, 110, 121, 0.15)' : 'none';
+        
+        // Handle line breaks
+        text.split('\n').forEach((line, i) => {
+            if (i > 0) bubble.appendChild(document.createElement('br'));
+            bubble.appendChild(document.createTextNode(line));
+        });
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.style.fontSize = '0.75rem';
+        timeDiv.style.color = '#8f7a7a';
+        timeDiv.style.marginTop = '5px';
+        timeDiv.style.paddingLeft = sender === 'bot' ? '10px' : '0';
+        timeDiv.style.paddingRight = sender === 'user' ? '10px' : '0';
+        timeDiv.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messageDiv.appendChild(bubble);
+        messageDiv.appendChild(timeDiv);
+        chatMessages.appendChild(messageDiv);
+        
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showLoading() {
+        loading = true;
+        sendBtn.disabled = true;
+        messageInput.disabled = true;
+        
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message message-bot';
+        loadingDiv.id = 'loading-message';
+        loadingDiv.innerHTML = `
+            <div style="max-width: 75%; padding: 15px 20px; border-radius: 25px; background: linear-gradient(135deg, #f9eef2 0%, #fdf0f0 100%); border: 1px solid rgba(183, 110, 121, 0.15); color: #6b5b5b;">
+                <div class="loading-spinner"></div>
+            </div>
+        `;
+        chatMessages.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function hideLoading() {
+        loading = false;
+        sendBtn.disabled = false;
+        messageInput.disabled = false;
+        const loadingMsg = document.getElementById('loading-message');
+        if (loadingMsg) loadingMsg.remove();
+    }
+
+    function displayTips(tips, emotion) {
+        currentEmotion = emotion;
+        
+        if (tips && tips.length > 0) {
+            tipsList.innerHTML = '';
+            tips.forEach((tip, index) => {
+                const li = document.createElement('li');
+                li.style.display = 'flex';
+                li.style.justifyContent = 'space-between';
+                li.style.alignItems = 'center';
+                li.style.padding = '12px 0';
+                li.style.borderBottom = index < tips.length - 1 ? '1px solid rgba(255, 255, 255, 0.4)' : 'none';
+                
+                // Tip text
+                const tipSpan = document.createElement('span');
+                tipSpan.textContent = tip;
+                tipSpan.style.flex = '1';
+                tipSpan.style.lineHeight = '1.5';
+                
+                // Save button
+                const saveBtn = document.createElement('button');
+                saveBtn.innerHTML = '⭐';
+                saveBtn.style.background = 'transparent';
+                saveBtn.style.border = 'none';
+                saveBtn.style.fontSize = '1.3rem';
+                saveBtn.style.cursor = 'pointer';
+                saveBtn.style.padding = '5px 10px';
+                saveBtn.style.marginLeft = '10px';
+                saveBtn.style.transition = 'all 0.3s';
+                saveBtn.style.borderRadius = '50%';
+                saveBtn.title = 'Save to favorites';
+                
+                // Hover effect
+                saveBtn.onmouseover = function() {
+                    this.style.transform = 'scale(1.2)';
+                };
+                saveBtn.onmouseout = function() {
+                    this.style.transform = 'scale(1)';
+                };
+                
+                // Add click event to save tip
+                saveBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    saveFavoriteTip(tip, emotion);
+                };
+                
+                li.appendChild(tipSpan);
+                li.appendChild(saveBtn);
+                tipsList.appendChild(li);
+            });
+            tipsContainer.style.display = 'block';
+        } else {
+            tipsContainer.style.display = 'none';
+        }
+    }
+
+    // Update stress meter
+    function updateStressMeter(score, level, icon) {
+        const container = document.getElementById('stress-meter-container');
+        const badge = document.getElementById('stress-level-badge');
+        const progress = document.getElementById('stress-progress');
+        const scoreSpan = document.getElementById('stress-score');
+        const messageSpan = document.getElementById('stress-message');
+        
+        // Show container
+        container.style.display = 'block';
+        
+        // Update badge
+        badge.textContent = `${icon} ${level} Stress`;
+        
+        // Set badge color
+        if (level === 'High') {
+            badge.style.background = '#b76e79';
+            badge.style.color = 'white';
+        } else if (level === 'Medium') {
+            badge.style.background = '#d48c98';
+            badge.style.color = 'white';
+        } else {
+            badge.style.background = '#a7b89e';
+            badge.style.color = 'white';
+        }
+        
+        // Update progress bar (score is 0-10, convert to percentage)
+        const percentage = (score / 10) * 100;
+        progress.style.width = percentage + '%';
+        
+        // Update score
+        scoreSpan.textContent = `Score: ${score}/10`;
+        
+        // Update message based on level
+        if (level === 'High') {
+            messageSpan.textContent = 'You\'re carrying a lot right now. Let\'s breathe together. 🌸';
+        } else if (level === 'Medium') {
+            messageSpan.textContent = 'You\'re managing, but rest would help. 💫';
+        } else {
+            messageSpan.textContent = 'You\'re doing well today. Keep going! 🌿';
+        }
+    }
+
+    // Save tip to favorites
+    async function saveFavoriteTip(tip, emotion) {
+        try {
+            const response = await fetch('/save_favorite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    tip: tip, 
+                    emotion: emotion 
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Show temporary success message
+                const msg = document.createElement('div');
+                msg.style.position = 'fixed';
+                msg.style.bottom = '20px';
+                msg.style.right = '20px';
+                msg.style.background = '#b76e79';
+                msg.style.color = 'white';
+                msg.style.padding = '15px 25px';
+                msg.style.borderRadius = '30px';
+                msg.style.boxShadow = '0 5px 20px rgba(183, 110, 121, 0.4)';
+                msg.style.zIndex = '1000';
+                msg.style.animation = 'slideIn 0.3s ease';
+                msg.style.fontWeight = '500';
+                msg.innerHTML = '✨ Tip saved to favorites! <span style="font-size:1.2rem;">⭐</span>';
+                
+                document.body.appendChild(msg);
+                
+                setTimeout(() => {
+                    msg.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => {
+                        msg.remove();
+                    }, 300);
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('Error saving tip:', error);
+        }
+    }
+
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message || loading) return;
+        
+        // Clear input and add user message
+        messageInput.value = '';
+        addMessage(message, 'user');
+        
+        // Show loading
+        showLoading();
+        
+        try {
+            const response = await fetch('/api/detect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            });
+            
+            const data = await response.json();
+            hideLoading();
+            
+            if (response.ok) {
+                addMessage(data.caring_response, 'bot');
+                displayTips(data.tips, data.emotion);
+                updateStressMeter(data.stress_score, data.stress_level, data.stress_icon);
+            } else {
+                addMessage(data.error || "I'm here, but something went wrong. Can you tell me again?", 'bot');
+            }
+        } catch (error) {
+            hideLoading();
+            addMessage("I'm here, but something went wrong. Can you tell me again, sweetheart?", 'bot');
+            console.error('Error:', error);
+        }
+    }
+</script>
+{% endblock %}

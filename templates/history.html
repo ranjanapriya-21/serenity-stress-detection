@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 30px auto;">
+    
+    <!-- Welcome Header -->
+    <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, #f9eef2 0%, #fff9f5 100%); border-radius: 40px; margin-bottom: 30px;">
+        <h1 style="color: #b76e79; font-size: 2.5rem; margin-bottom: 15px;">Your Journey, {{ username }} 🌸</h1>
+        <p style="color: #8f7a7a; font-size: 1.1rem;">Every conversation is a step toward healing. Here are your moments of sharing.</p>
+    </div>
+    
+    {% if conversations %}
+        <!-- Simple Stats Summary -->
+        <div style="background: #c4d3c9; border-radius: 30px; padding: 25px; margin-bottom: 30px;">
+            <h3 style="color: #6b5b5b; margin-bottom: 15px;">💫 Your Journey Summary</h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; color: #b76e79; margin-bottom: 5px;">{{ conversations|length }}</div>
+                    <div style="color: #6b5b5b;">Total Conversations</div>
+                </div>
+                <div style="text-align: center;">
+                    {% set emotions = [] %}
+                    {% for conv in conversations %}
+                        {% if conv.detected_emotion not in emotions %}
+                            {% set emotions = emotions.append(conv.detected_emotion) %}
+                        {% endif %}
+                    {% endfor %}
+                    <div style="font-size: 1.2rem; color: #b76e79; margin-bottom: 5px;">{{ emotions|length }}</div>
+                    <div style="color: #6b5b5b;">Different Emotions</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conversations List -->
+        <div>
+            {% for conv in conversations %}
+            <div style="background: white; border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(183, 110, 121, 0.1);">
+                
+                <!-- Date and Emotion -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                    <span style="color: #b76e79; font-weight: 600; font-size: 0.9rem;">
+                        {{ conv.timestamp.strftime('%B %d, %Y at %I:%M %p') }}
+                    </span>
+                    <span style="background: #f9eef2; color: #b76e79; padding: 5px 15px; border-radius: 30px; font-size: 0.85rem; font-weight: 600;">
+                        {{ conv.detected_emotion }}
+                    </span>
+                </div>
+                
+                <!-- User Message -->
+                <div style="margin-bottom: 15px;">
+                    <div style="color: #6b5b5b; font-weight: 500; margin-bottom: 5px;">You said:</div>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 15px; color: #6b5b5b;">
+                        {{ conv.user_message }}
+                    </div>
+                </div>
+                
+                <!-- Bot Response -->
+                <div>
+                    <div style="color: #b76e79; font-weight: 500; margin-bottom: 5px;">🌸 Serenity responded:</div>
+                    <div style="background: #f9eef2; padding: 15px; border-radius: 15px; color: #6b5b5b; border-left: 3px solid #b76e79;">
+                        {{ conv.bot_response }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+    {% else %}
+        <!-- No conversations yet -->
+        <div style="background: white; border-radius: 30px; padding: 50px; text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🌱</div>
+            <h3 style="color: #6b5b5b; margin-bottom: 15px;">No conversations yet, sweetheart.</h3>
+            <p style="color: #8f7a7a; margin-bottom: 25px;">Whenever you're ready to talk, I'm here to listen.</p>
+            <a href="/chat" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #b76e79 0%, #d48c98 100%); color: white; text-decoration: none; border-radius: 40px; font-weight: 600;">
+                Start Your First Conversation ✨
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
