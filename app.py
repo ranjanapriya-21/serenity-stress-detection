@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,6 +6,7 @@ from datetime import datetime
 from emotion_detection import detect_emotion_and_respond
 import os
 import logging
+import json
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -16,14 +17,25 @@ app = Flask(__name__)
 # Secret key for sessions
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-secret-key-change-this')
 
-# Database configuration - Use /tmp for SQLite on Render (writable)
-import tempfile
-temp_dir = tempfile.gettempdir()
-db_path = os.path.join(temp_dir, 'users.db')
+# -------------------------------------------------------------------
+# Database Configuration - With Persistent Disk Support for Render
+# -------------------------------------------------------------------
+
+# Determine database path based on environment
+if os.path.exists('/opt/render/data'):
+    # On Render with persistent disk
+    db_path = '/opt/render/data/users.db'
+    logger.info("✅ Using persistent disk on Render")
+else:
+    # Local development - use temp directory
+    import tempfile
+    db_path = os.path.join(tempfile.gettempdir(), 'users.db')
+    logger.info(f"📁 Using local temp directory: {db_path}")
+
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-logger.info(f"Database path: {db_path}")
+logger.info(f"🗄️ Database will be stored at: {db_path}")
 
 db = SQLAlchemy(app)
 
@@ -142,19 +154,22 @@ def register():
             username = request.form['username']
             password = request.form['password']
             
+            # Check if user exists
             existing_user = User.query.filter_by(username=username).first()
             if existing_user:
                 return "Username already exists. Please choose another."
             
+            # Hash password and create user
             hashed_password = generate_password_hash(password)
             new_user = User(username=username, password=hashed_password)
             db.session.add(new_user)
             db.session.commit()
             
+            logger.info(f"✅ New user registered: {username}")
             return redirect(url_for('login'))
         except Exception as e:
             logger.error(f"Registration error: {e}")
-            return "Registration failed", 500
+            return "Registration failed. Please try again.", 500
     
     return render_template('register.html')
 
@@ -173,12 +188,13 @@ def login():
             
             if user and check_password_hash(user.password, password):
                 login_user(user)
+                logger.info(f"✅ User logged in: {username}")
                 return redirect(url_for('chat'))
             else:
                 return "Invalid username or password"
         except Exception as e:
             logger.error(f"Login error: {e}")
-            return "Login failed", 500
+            return "Login failed. Please try again.", 500
     
     return render_template('login.html')
 
@@ -530,12 +546,202 @@ def users():
         return "Users page error", 500
 
 # -------------------------------------------------------------------
+# Export User Data (Backup)
+# -------------------------------------------------------------------
+@app.route('/export-data')
+@login_required
+def export_data():
+    try:
+        # Get user's data
+        conversations = Conversation.query.filter_by(user_id=current_user.id).all()
+        journal_entries = Journal.query.filter_by(user_id=current_user.id).all()
+        favorite_tips = FavoriteTip.query.filter_by(user_id=current_user.id).all()
+        
+        # Prepare data dictionary
+        user_data = {
+            'username': current_user.username,
+            'export_date': datetime.utcnow().isoformat(),
+            'conversations': [],
+            'journal_entries': [],
+            'favorite_tips': []
+        }
+        
+        # Add conversations
+        for conv in conversations:
+            user_data['conversations'].append({
+                'user_message': conv.user_message,
+                'bot_response': conv.bot_response,
+                'detected_emotion': conv.detected_emotion,
+                'timestamp': conv.timestamp.isoformat() if conv.timestamp else None
+            })
+        
+        # Add journal entries
+        for journal in journal_entries:
+            user_data['journal_entries'].append({
+                'title': journal.title,
+                'content': journal.content,
+                'mood': journal.mood,
+                'created_at': journal.created_at.isoformat() if journal.created_at else None
+            })
+        
+        # Add favorite tips
+        for tip in favorite_tips:
+            user_data['favorite_tips'].append({
+                'tip_text': tip.tip_text,
+                'emotion': tip.emotion,
+                'saved_from': tip.saved_from,
+                'created_at': tip.created_at.isoformat() if tip.created_at else None
+            })
+        
+        # Create response with JSON file
+        response = Response(
+            json.dumps(user_data, indent=2),
+            mimetype='application/json',
+            headers={'Content-Disposition': f'attachment; filename=serenity_backup_{current_user.username}.json'}
+        )
+        return response
+        
+    except Exception as e:
+        logger.error(f"Export error: {e}")
+        return "Export failed", 500
+
+# -------------------------------------------------------------------
+# Import User Data (Restore)
+# -------------------------------------------------------------------
+@app.route('/import-data', methods=['POST'])
+@login_required
+def import_data():
+    try:
+        # Get uploaded file
+        file = request.files.get('backup_file')
+        if not file:
+            return "No file uploaded", 400
+        
+        # Read and parse JSON
+        file_content = file.read().decode('utf-8')
+        imported_data = json.loads(file_content)
+        
+        # Verify it's the right user (optional)
+        if imported_data.get('username') != current_user.username:
+            return "Warning: This backup belongs to a different user. Import anyway?", 400
+        
+        # Clear existing data (optional - comment out if you want to merge instead)
+        Conversation.query.filter_by(user_id=current_user.id).delete()
+        Journal.query.filter_by(user_id=current_user.id).delete()
+        FavoriteTip.query.filter_by(user_id=current_user.id).delete()
+        
+        # Import conversations
+        for conv_data in imported_data.get('conversations', []):
+            conv = Conversation(
+                user_id=current_user.id,
+                user_message=conv_data['user_message'],
+                bot_response=conv_data['bot_response'],
+                detected_emotion=conv_data['detected_emotion'],
+                timestamp=datetime.fromisoformat(conv_data['timestamp']) if conv_data.get('timestamp') else datetime.utcnow()
+            )
+            db.session.add(conv)
+        
+        # Import journal entries
+        for journal_data in imported_data.get('journal_entries', []):
+            journal = Journal(
+                user_id=current_user.id,
+                title=journal_data['title'],
+                content=journal_data['content'],
+                mood=journal_data['mood'],
+                created_at=datetime.fromisoformat(journal_data['created_at']) if journal_data.get('created_at') else datetime.utcnow()
+            )
+            db.session.add(journal)
+        
+        # Import favorite tips
+        for tip_data in imported_data.get('favorite_tips', []):
+            tip = FavoriteTip(
+                user_id=current_user.id,
+                tip_text=tip_data['tip_text'],
+                emotion=tip_data['emotion'],
+                saved_from=tip_data.get('saved_from', 'Imported'),
+                created_at=datetime.fromisoformat(tip_data['created_at']) if tip_data.get('created_at') else datetime.utcnow()
+            )
+            db.session.add(tip)
+        
+        db.session.commit()
+        
+        return redirect(url_for('profile'))
+        
+    except Exception as e:
+        logger.error(f"Import error: {e}")
+        return f"Import failed: {str(e)}", 500
+
+# -------------------------------------------------------------------
+# Backup Page
+# -------------------------------------------------------------------
+@app.route('/backup')
+@login_required
+def backup_page():
+    return render_template('backup.html')
+
+# -------------------------------------------------------------------
+# Debug: Check Database Tables
+# -------------------------------------------------------------------
+@app.route('/debug-db')
+def debug_database():
+    try:
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        
+        user_count = 0
+        if 'user' in tables:
+            user_count = User.query.count()
+        
+        return {
+            'database_path': db_path,
+            'file_exists': os.path.exists(db_path),
+            'file_size': os.path.getsize(db_path) if os.path.exists(db_path) else 0,
+            'tables': tables,
+            'user_count': user_count,
+            'status': 'healthy' if 'user' in tables else 'missing tables'
+        }
+    except Exception as e:
+        return {'error': str(e), 'database_path': db_path}
+
+# -------------------------------------------------------------------
 # Health Check (Important for Render)
 # -------------------------------------------------------------------
-
 @app.route('/health')
 def health():
-    return {"status": "healthy"}, 200
+    return {"status": "healthy", "database": db_path}, 200
+
+# -------------------------------------------------------------------
+# Force database creation - CRITICAL FIX FOR RENDER
+# -------------------------------------------------------------------
+def init_database():
+    with app.app_context():
+        try:
+            # Force create all tables
+            db.create_all()
+            logger.info("✅ Database tables created successfully")
+            
+            # Verify tables exist by trying a simple query
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            logger.info(f"📊 Tables in database: {tables}")
+            
+            # Log database location
+            if os.path.exists(db_path):
+                size = os.path.getsize(db_path)
+                logger.info(f"📁 Database file: {db_path} ({size} bytes)")
+            else:
+                logger.warning("⚠️ Database file not found after creation")
+                
+        except Exception as e:
+            logger.error(f"❌ Database creation error: {e}")
+
+# Call it twice to be sure!
+logger.info("🚀 First database initialization attempt...")
+init_database()
+logger.info("🚀 Second database initialization attempt...")
+init_database()
 
 # -------------------------------------------------------------------
 # Run App - FIXED FOR RENDER
@@ -548,16 +754,9 @@ if __name__ != '__main__':
     app.logger.setLevel(gunicorn_logger.level)
 
 if __name__ == '__main__':
-    with app.app_context():
-        try:
-            db.create_all()
-            logger.info("Database tables created successfully")
-        except Exception as e:
-            logger.error(f"Database creation error: {e}")
-    
     # Get port from environment variable
     port = int(os.environ.get('PORT', 10000))
-    logger.info(f"Starting app on port {port}")
+    logger.info(f"🚀 Starting app on port {port}")
     
     # Bind to 0.0.0.0 to allow external connections
     app.run(host='0.0.0.0', port=port, debug=False)
