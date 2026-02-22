@@ -1,6 +1,168 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>About This Project</h1>
-<p>This project detects human emotions using AI.</p>
+<div style="max-width: 900px; margin: 40px auto;">
+    
+    <!-- Header -->
+    <div style="background: white; border-radius: 40px; padding: 40px; text-align: center; box-shadow: 0 20px 40px rgba(183, 110, 121, 0.15); margin-bottom: 30px;">
+        <div style="font-size: 4rem; margin-bottom: 20px;">🌸</div>
+        <h1 style="color: #b76e79; font-size: 2.8rem; margin-bottom: 20px;">About Serenity</h1>
+        <p style="color: #8f7a7a; font-size: 1.2rem; max-width: 700px; margin: 0 auto;">
+            A caring companion that listens, understands, and helps you navigate through stress and emotions.
+        </p>
+    </div>
+    
+    <!-- Project Overview -->
+    <div style="background: white; border-radius: 30px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1);">
+        <h2 style="color: #b76e79; margin-bottom: 20px;">📋 Project Overview</h2>
+        <p style="color: #6b5b5b; line-height: 1.8; margin-bottom: 20px;">
+            Serenity is a final year project designed to help students and adults manage stress and emotions through 
+            conversational AI. The system detects emotions from text input and provides caring, mother-like responses 
+            along with personalized coping tips.
+        </p>
+        <p style="color: #6b5b5b; line-height: 1.8;">
+            Built with a focus on creating a safe, judgment-free space where users can express their feelings freely 
+            and receive emotional support anytime.
+        </p>
+    </div>
+    
+    <!-- Key Features -->
+    <div style="background: white; border-radius: 30px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1);">
+        <h2 style="color: #b76e79; margin-bottom: 30px;">✨ Key Features</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px;">
+            
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <span style="font-size: 2rem;">💬</span>
+                <div>
+                    <h3 style="color: #b76e79; margin-bottom: 5px;">Emotion Detection</h3>
+                    <p style="color: #8f7a7a;">Analyzes text to detect emotions like stress, anxiety, sadness, and provides caring responses.</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <span style="font-size: 2rem;">📊</span>
+                <div>
+                    <h3 style="color: #b76e79; margin-bottom: 5px;">Stress Level Meter</h3>
+                    <p style="color: #8f7a7a;">Real-time stress scoring (Low/Medium/High) with visual progress bar.</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <span style="font-size: 2rem;">📝</span>
+                <div>
+                    <h3 style="color: #b76e79; margin-bottom: 5px;">Private Journal</h3>
+                    <p style="color: #8f7a7a;">Personal diary to write thoughts and track moods over time.</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <span style="font-size: 2rem;">⭐</span>
+                <div>
+                    <h3 style="color: #b76e79; margin-bottom: 5px;">Favorite Tips</h3>
+                    <p style="color: #8f7a7a;">Save helpful coping tips and access them anytime.</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <span style="font-size: 2rem;">📈</span>
+                <div>
+                    <h3 style="color: #b76e79; margin-bottom: 5px;">Mood Tracker</h3>
+                    <p style="color: #8f7a7a;">Visual chart showing emotional journey over time.</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <span style="font-size: 2rem;">🔐</span>
+                <div>
+                    <h3 style="color: #b76e79; margin-bottom: 5px;">Private & Secure</h3>
+                    <p style="color: #8f7a7a;">Password hashing, secure sessions, and data export options.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- How It Works -->
+    <div style="background: white; border-radius: 30px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1);">
+        <h2 style="color: #b76e79; margin-bottom: 30px;">🔄 How It Works</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+            <div>
+                <div style="background: #f9eef2; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem; font-weight: bold; color: #b76e79;">1</div>
+                <h3 style="color: #6b5b5b; margin-bottom: 10px;">Register/Login</h3>
+                <p style="color: #8f7a7a; font-size: 0.95rem;">Create your secure account</p>
+            </div>
+            <div>
+                <div style="background: #f9eef2; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem; font-weight: bold; color: #b76e79;">2</div>
+                <h3 style="color: #6b5b5b; margin-bottom: 10px;">Start Chatting</h3>
+                <p style="color: #8f7a7a; font-size: 0.95rem;">Talk naturally about your feelings</p>
+            </div>
+            <div>
+                <div style="background: #f9eef2; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem; font-weight: bold; color: #b76e79;">3</div>
+                <h3 style="color: #6b5b5b; margin-bottom: 10px;">Get Support</h3>
+                <p style="color: #8f7a7a; font-size: 0.95rem;">Receive caring responses & track progress</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Technology Stack -->
+    <div style="background: white; border-radius: 30px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1);">
+        <h2 style="color: #b76e79; margin-bottom: 20px;">⚙️ Technology Stack</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+            <div>
+                <h3 style="color: #6b5b5b; margin-bottom: 10px;">Backend</h3>
+                <ul style="color: #8f7a7a; list-style: none; padding: 0;">
+                    <li>🐍 Python Flask</li>
+                    <li>🗄️ SQLAlchemy ORM</li>
+                    <li>🔐 Flask-Login</li>
+                    <li>🔑 Werkzeug Security</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color: #6b5b5b; margin-bottom: 10px;">Frontend</h3>
+                <ul style="color: #8f7a7a; list-style: none; padding: 0;">
+                    <li>📄 HTML5</li>
+                    <li>🎨 CSS3</li>
+                    <li>⚡ JavaScript</li>
+                    <li>📊 Chart.js</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h3 style="color: #6b5b5b; margin-bottom: 10px;">Deployment</h3>
+            <p style="color: #8f7a7a;">🚀 GitHub + Render (Live at this URL)</p>
+        </div>
+    </div>
+    
+    <!-- About the Developer -->
+    <div style="background: linear-gradient(135deg, #f9eef2 0%, #fff9f5 100%); border-radius: 30px; padding: 40px; text-align: center; border: 1px solid rgba(183, 110, 121, 0.2);">
+        <div style="font-size: 3rem; margin-bottom: 15px;">👩‍💻</div>
+        <h2 style="color: #b76e79; margin-bottom: 15px;">About the Developer</h2>
+        <p style="color: #6b5b5b; max-width: 600px; margin: 0 auto 20px; line-height: 1.8;">
+            This project was created by <strong>Varsha</strong> as a final year project with the goal of helping 
+            students and adults manage stress and emotions through technology.
+        </p>
+        <p style="color: #8f7a7a; font-size: 0.95rem;">
+            📍 Final Year Project • 🎓 [Your College Name] • 📅 2026
+        </p>
+    </div>
+    
+</div>
+
+<style>
+    ul li {
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+    }
+    ul li:before {
+        content: "•";
+        color: #b76e79;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+    }
+</style>
 {% endblock %}
