@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -18,7 +18,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-secret-key-change-this')
 
 # -------------------------------------------------------------------
-# Database Configuration - With Persistent Disk Support for Render
+# Database Configuration
 # -------------------------------------------------------------------
 
 # Determine database path based on environment
@@ -54,6 +54,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
+    age = db.Column(db.Integer, nullable=False, default=20)  # NEW AGE FIELD
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -144,7 +145,7 @@ def about():
     return render_template('about.html')
 
 # -------------------------------------------------------------------
-# Register
+# Register (UPDATED WITH AGE)
 # -------------------------------------------------------------------
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -153,23 +154,27 @@ def register():
         try:
             username = request.form['username']
             password = request.form['password']
+            age = request.form['age']  # NEW AGE FIELD
             
             # Check if user exists
             existing_user = User.query.filter_by(username=username).first()
             if existing_user:
-                return "Username already exists. Please choose another."
+                flash("Username already exists. Please choose another.", "error")
+                return redirect(url_for('register'))
             
-            # Hash password and create user
+            # Hash password and create user with age
             hashed_password = generate_password_hash(password)
-            new_user = User(username=username, password=hashed_password)
+            new_user = User(username=username, password=hashed_password, age=age)
             db.session.add(new_user)
             db.session.commit()
             
-            logger.info(f"✅ New user registered: {username}")
+            logger.info(f"✅ New user registered: {username}, Age: {age}")
+            flash(f"Welcome, {username}! Registration successful. Please login.", "success")
             return redirect(url_for('login'))
         except Exception as e:
             logger.error(f"Registration error: {e}")
-            return "Registration failed. Please try again.", 500
+            flash("Registration failed. Please try again.", "error")
+            return redirect(url_for('register'))
     
     return render_template('register.html')
 
@@ -189,12 +194,15 @@ def login():
             if user and check_password_hash(user.password, password):
                 login_user(user)
                 logger.info(f"✅ User logged in: {username}")
+                flash(f"Welcome back, {username}! ❤️", "success")
                 return redirect(url_for('chat'))
             else:
-                return "Invalid username or password"
+                flash("Invalid username or password", "error")
+                return redirect(url_for('login'))
         except Exception as e:
             logger.error(f"Login error: {e}")
-            return "Login failed. Please try again.", 500
+            flash("Login failed. Please try again.", "error")
+            return redirect(url_for('login'))
     
     return render_template('login.html')
 
@@ -206,6 +214,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash("Come back soon, dear! 🌸", "info")
     return redirect(url_for('login'))
 
 # -------------------------------------------------------------------
@@ -218,7 +227,7 @@ def dashboard():
     return render_template('dashboard.html', username=current_user.username)
 
 # -------------------------------------------------------------------
-# Profile Page
+# Profile Page (UPDATED WITH AGE)
 # -------------------------------------------------------------------
 
 @app.route('/profile')
@@ -255,7 +264,8 @@ def profile():
                 'Burnout/Exhaustion': 8,
                 'Sadness': 5,
                 'Relationship Concern': 6,
-                'Gentle Conversation': 2
+                'Gentle Conversation': 2,
+                'Happiness': 1
             }
             
             total_stress = 0
@@ -273,6 +283,7 @@ def profile():
         
         return render_template('profile.html',
                              username=current_user.username,
+                             age=current_user.age,  # PASS AGE TO TEMPLATE
                              created_at=current_user.created_at,
                              total_conversations=total_conversations,
                              unique_emotions=unique_emotions,
@@ -307,7 +318,8 @@ def mood_tracker():
             'Anger/Frustration': 5,
             'Burnout/Exhaustion': 6,
             'Relationship Concern': 7,
-            'Gentle Conversation': 8
+            'Gentle Conversation': 8,
+            'Happiness': 9
         }
         
         for conv in conversations:
@@ -468,16 +480,18 @@ def delete_favorite(id):
         return "Failed to delete favorite", 500
 
 # -------------------------------------------------------------------
-# Chat Page
+# Chat Page (UPDATED WITH AGE)
 # -------------------------------------------------------------------
 
 @app.route('/chat')
 @login_required
 def chat():
-    return render_template('chat.html', username=current_user.username)
+    return render_template('chat.html', 
+                         username=current_user.username,
+                         age=current_user.age)  # PASS AGE TO TEMPLATE
 
 # -------------------------------------------------------------------
-# API Detect Emotion
+# API Detect Emotion (UPDATED WITH AGE)
 # -------------------------------------------------------------------
 
 @app.route('/api/detect', methods=['POST'])
@@ -486,12 +500,15 @@ def detect():
     try:
         data = request.get_json()
         message = data.get('message', '')
+        age = data.get('age', 20)  # Get age from request
         
         if not message:
             return {'error': 'Tell me what\'s on your mind, sweetheart'}, 400
         
-        response = detect_emotion_and_respond(message)
+        # Get emotion detection response WITH AGE
+        response = detect_emotion_and_respond(message, age)
         
+        # Save to database
         conversation = Conversation(
             user_id=current_user.id,
             user_message=message,
@@ -560,6 +577,7 @@ def export_data():
         # Prepare data dictionary
         user_data = {
             'username': current_user.username,
+            'age': current_user.age,  # INCLUDE AGE IN BACKUP
             'export_date': datetime.utcnow().isoformat(),
             'conversations': [],
             'journal_entries': [],
@@ -625,7 +643,7 @@ def import_data():
         if imported_data.get('username') != current_user.username:
             return "Warning: This backup belongs to a different user. Import anyway?", 400
         
-        # Clear existing data (optional - comment out if you want to merge instead)
+        # Clear existing data
         Conversation.query.filter_by(user_id=current_user.id).delete()
         Journal.query.filter_by(user_id=current_user.id).delete()
         FavoriteTip.query.filter_by(user_id=current_user.id).delete()
@@ -705,14 +723,14 @@ def debug_database():
         return {'error': str(e), 'database_path': db_path}
 
 # -------------------------------------------------------------------
-# Health Check (Important for Render)
+# Health Check
 # -------------------------------------------------------------------
 @app.route('/health')
 def health():
     return {"status": "healthy", "database": db_path}, 200
 
 # -------------------------------------------------------------------
-# Force database creation - CRITICAL FIX FOR RENDER
+# Initialize Database
 # -------------------------------------------------------------------
 def init_database():
     with app.app_context():
@@ -721,7 +739,7 @@ def init_database():
             db.create_all()
             logger.info("✅ Database tables created successfully")
             
-            # Verify tables exist by trying a simple query
+            # Verify tables exist
             from sqlalchemy import inspect
             inspector = inspect(db.engine)
             tables = inspector.get_table_names()
@@ -737,26 +755,19 @@ def init_database():
         except Exception as e:
             logger.error(f"❌ Database creation error: {e}")
 
-# Call it twice to be sure!
-logger.info("🚀 First database initialization attempt...")
-init_database()
-logger.info("🚀 Second database initialization attempt...")
+# Initialize database
 init_database()
 
 # -------------------------------------------------------------------
-# Run App - FIXED FOR RENDER
+# Run App
 # -------------------------------------------------------------------
 
 if __name__ != '__main__':
-    # This runs when gunicorn imports the app
     gunicorn_logger = logging.getLogger('gunicorn.error')
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
 
 if __name__ == '__main__':
-    # Get port from environment variable
     port = int(os.environ.get('PORT', 10000))
     logger.info(f"🚀 Starting app on port {port}")
-    
-    # Bind to 0.0.0.0 to allow external connections
     app.run(host='0.0.0.0', port=port, debug=False)

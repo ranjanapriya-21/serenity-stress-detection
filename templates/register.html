@@ -9,6 +9,17 @@
             I'm so happy you're here. Let's walk this path together.
         </p>
         
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="background: {% if category == 'error' %}#fef2f2{% else %}#f0f9ff{% endif %}; border: 1px solid {% if category == 'error' %}#fecaca{% else %}#bae6fd{% endif %}; border-radius: 12px; padding: 15px; margin-bottom: 25px;">
+                        <p style="color: {% if category == 'error' %}#991b1b{% else %}#0369a1{% endif %}; margin: 0;">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
         <form method="POST">
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Your Name</label>
@@ -17,6 +28,17 @@
                        placeholder="What should I call you?"
                        required
                        style="width: 100%; padding: 12px 15px; border: 2px solid #e8c2c9; border-radius: 12px; font-size: 16px; transition: all 0.3s;">
+            </div>
+            
+            <!-- NEW AGE FIELD -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Your Age</label>
+                <input type="number" 
+                       name="age" 
+                       placeholder="Enter your age"
+                       min="10" max="100"
+                       required
+                       style="width: 100%; padding: 12px 15px; border: 2px solid #e8c2c9; border-radius: 12px; font-size: 16px;">
             </div>
             
             <div style="margin-bottom: 20px;">
