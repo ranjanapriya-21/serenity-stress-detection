@@ -14,6 +14,53 @@ def detect_emotion_and_respond(message, age=20):
     else:
         age_group = "senior"
     
+    # -------------------------------------------------------------------
+    # GENERAL CONVERSATION HANDLER - Check for common phrases FIRST
+    # -------------------------------------------------------------------
+    message_lower_no_punct = message_lower.replace('!', '').replace('?', '').replace('.', '').strip()
+    
+    # Greetings
+    greetings = ['hi', 'hello', 'hey', 'hola', 'greetings', 'good morning', 'good afternoon', 'good evening', 'whats up', 'sup']
+    for greet in greetings:
+        if greet in message_lower_no_punct or message_lower_no_punct == greet:
+            return greeting_response(age_group)
+    
+    # Gratitude / Thank you
+    thanks = ['thank', 'thanks', 'thank you', 'thanks a lot', 'appreciate it', 'thx', 'ty']
+    for thank in thanks:
+        if thank in message_lower_no_punct:
+            return gratitude_response(age_group)
+    
+    # Positive affirmations / agreement
+    positives = ['yes', 'yeah', 'yep', 'sure', 'ok', 'okay', 'fine', 'good', 'great', 'awesome', 'cool']
+    for pos in positives:
+        if message_lower_no_punct == pos or message_lower_no_punct.startswith(pos + ' '):
+            return positive_response(age_group)
+    
+    # Negatives / disagreement / no
+    negatives = ['no', 'nope', 'nah', 'not really', 'not at all', 'never mind']
+    for neg in negatives:
+        if message_lower_no_punct == neg or message_lower_no_punct.startswith(neg + ' '):
+            return negative_response(age_group)
+    
+    # Farewells / goodbye
+    goodbyes = ['bye', 'goodbye', 'see you', 'cya', 'take care', 'bye bye', 'good night', 'gn']
+    for bye in goodbyes:
+        if bye in message_lower_no_punct:
+            return goodbye_response(age_group)
+    
+    # Questions about the bot
+    bot_questions = ['who are you', 'what are you', 'your name', 'tell me about yourself', 'what can you do', 'how can you help']
+    for q in bot_questions:
+        if q in message_lower_no_punct:
+            return bot_intro_response(age_group)
+    
+    # Help requests
+    help_requests = ['help', 'i need help', 'can you help', 'assist', 'support']
+    for h in help_requests:
+        if h in message_lower_no_punct:
+            return help_response(age_group)
+    
     # Negation words list
     negation_words = ['not', "don't", 'dont', 'never', 'no', "can't", 'cant', "won't", 'wont', "didn't", 'didnt', "wasn't", 'wasnt']
     
@@ -109,6 +156,254 @@ def detect_emotion_and_respond(message, age=20):
 # ======================================================================
 # RESPONSE POOLS - MULTIPLE VARIATIONS FOR EACH EMOTION AND AGE GROUP
 # ======================================================================
+
+# ----------------------------------------------------------------------
+# GENERAL CONVERSATION RESPONSES
+# ----------------------------------------------------------------------
+def greeting_response(age_group):
+    responses = {
+        "teen": [
+            "Hey there! 👋 So nice to hear from you. How's your day going?",
+            "Hi sweetheart! 🌸 What's on your mind today?",
+            "Hello! 😊 I'm here and ready to listen. How are you feeling?",
+            "Hey! 👋 Tell me what's happening in your world today."
+        ],
+        "young_adult": [
+            "Hi there! 👋 Good to see you. How's everything going?",
+            "Hello! 🌸 I'm here for you. What would you like to talk about?",
+            "Hey! 😊 How are you doing today?",
+            "Hi! 👋 Ready to listen whenever you're ready to share."
+        ],
+        "adult": [
+            "Hello! 👋 I'm glad you're here. How are you today?",
+            "Hi there! 🌸 What's on your mind? I'm all ears.",
+            "Greetings! 😊 How can I support you today?",
+            "Hello! 👋 Take your time - I'm here to listen."
+        ],
+        "senior": [
+            "Hello dear! 👋 So nice to hear from you. How are you today?",
+            "Hi there! 🌸 What's on your heart today?",
+            "Greetings! 😊 I'm always here when you need someone to talk to.",
+            "Hello! 👋 How has your day been, dear?"
+        ]
+    }
+    return {
+        'emotion': 'Greeting',
+        'stress_score': 1,
+        'stress_level': 'Low',
+        'stress_icon': '🟢',
+        'caring_response': random.choice(responses[age_group]),
+        'tips': ["🌸 I'm here to listen", "💬 Just start talking whenever you're ready"]
+    }
+
+def gratitude_response(age_group):
+    responses = {
+        "teen": [
+            "You're so welcome, sweetheart! 🤗 That means a lot to me.",
+            "Aww, thank YOU for trusting me! 💕 How are you feeling?",
+            "You don't have to thank me - I'm here because I care about you. 🌸",
+            "That's so kind of you! 😊 How can I help you today?"
+        ],
+        "young_adult": [
+            "You're very welcome! 🤗 That's why I'm here.",
+            "Thank you for saying that! 💕 What's on your mind today?",
+            "It's my pleasure to be here for you. 🌸 How are things?",
+            "Aww, thank you! 😊 I'm glad you reached out."
+        ],
+        "adult": [
+            "You're so welcome! 🤗 That's what I'm here for.",
+            "Thank you for your kind words. 💕 How are you doing today?",
+            "It means a lot to hear that. 🌸 What would you like to talk about?",
+            "I appreciate that! 😊 How can I support you right now?"
+        ],
+        "senior": [
+            "You're most welcome, dear! 🤗 It's always a pleasure.",
+            "Thank you for your kindness. 💕 How are you today?",
+            "That's so sweet of you to say. 🌸 What's on your mind?",
+            "It's my joy to be here for you, dear. 😊"
+        ]
+    }
+    return {
+        'emotion': 'Gratitude',
+        'stress_score': 1,
+        'stress_level': 'Low',
+        'stress_icon': '🟢',
+        'caring_response': random.choice(responses[age_group]),
+        'tips': ["💕 Your kindness matters", "🌸 I'm always here for you"]
+    }
+
+def positive_response(age_group):
+    responses = {
+        "teen": [
+            "That's great to hear! 😊 What's making you feel positive today?",
+            "Awesome! 🌸 Tell me more about what's going well.",
+            "I love that energy! 💫 What's the good news?",
+            "So glad to hear that! 😊 Share your happiness with me."
+        ],
+        "young_adult": [
+            "That's wonderful! 😊 What's bringing that positivity?",
+            "Love to hear that! 🌸 Tell me more.",
+            "Great! 💫 What's going right for you today?",
+            "I'm so glad! 😊 What's contributing to that good feeling?"
+        ],
+        "adult": [
+            "That's good to hear! 😊 What's working well for you?",
+            "Wonderful! 🌸 I'm glad things are going in a positive direction.",
+            "That's great! 💫 Tell me more about what's happening.",
+            "I'm happy to hear that! 😊 What's bringing you this positivity?"
+        ],
+        "senior": [
+            "That's lovely to hear, dear! 😊 What's making you feel this way?",
+            "Wonderful! 🌸 I'm so glad things are well.",
+            "That's great! 💫 Share your good news with me.",
+            "I'm happy for you, dear! 😊 Tell me more."
+        ]
+    }
+    return {
+        'emotion': 'Positive',
+        'stress_score': 1,
+        'stress_level': 'Low',
+        'stress_icon': '🟢',
+        'caring_response': random.choice(responses[age_group]),
+        'tips': ["🌟 Celebrate the good moments", "💫 Positivity is powerful"]
+    }
+
+def negative_response(age_group):
+    responses = {
+        "teen": [
+            "I hear you saying no. 🌸 That's okay - you can tell me anything. What's on your mind?",
+            "No is a complete sentence. 💫 What would you like to talk about instead?",
+            "I understand. 🌱 Is there something else you'd like to share?",
+            "That's okay. 🌸 I'm still here whenever you're ready."
+        ],
+        "young_adult": [
+            "I hear you. 🌸 It's okay to say no. What's going on?",
+            "No is perfectly fine. 💫 Is there something you'd rather talk about?",
+            "I understand completely. 🌱 I'm here if you change your mind.",
+            "That's okay. 🌸 No pressure at all. I'm still here."
+        ],
+        "adult": [
+            "I hear you. 🌸 That's perfectly fine. How are you feeling otherwise?",
+            "No is always okay. 💫 I'm here whenever you need me.",
+            "I understand. 🌱 Is there something else on your mind?",
+            "That's completely fine. 🌸 I'm still here to listen."
+        ],
+        "senior": [
+            "I understand, dear. 🌸 That's perfectly okay.",
+            "No is always okay. 💫 I'm here for you whenever you need.",
+            "I hear you. 🌱 Would you like to talk about something else?",
+            "That's fine, dear. 🌸 I'm still here with you."
+        ]
+    }
+    return {
+        'emotion': 'Neutral',
+        'stress_score': 2,
+        'stress_level': 'Low',
+        'stress_icon': '🟢',
+        'caring_response': random.choice(responses[age_group]),
+        'tips': ["🌱 It's okay to say no", "🌸 I'm still here for you"]
+    }
+
+def goodbye_response(age_group):
+    responses = {
+        "teen": [
+            "Take care, sweetheart! 🌸 I'll be here when you come back.",
+            "Bye for now! 💫 Remember I'm always here if you need me.",
+            "See you later! 🌱 Hope you have a good day.",
+            "Take care! 😊 Come back anytime you want to talk."
+        ],
+        "young_adult": [
+            "Take care! 🌸 I'll be here whenever you need me.",
+            "Bye for now! 💫 Hope you have a great day.",
+            "See you later! 🌱 I'm always here to listen.",
+            "Take care! 😊 Come back anytime."
+        ],
+        "adult": [
+            "Take care! 🌸 I'm always here when you need someone.",
+            "Bye for now! 💫 Hope your day goes well.",
+            "See you next time! 🌱 I'll be here.",
+            "Take care! 😊 Anytime you need to talk, I'm here."
+        ],
+        "senior": [
+            "Take care, dear! 🌸 It was nice talking with you.",
+            "Goodbye for now! 💫 I'm always here when you need me.",
+            "See you soon, dear! 🌱 Hope you have a peaceful day.",
+            "Take care! 😊 Come back anytime you want to chat."
+        ]
+    }
+    return {
+        'emotion': 'Goodbye',
+        'stress_score': 1,
+        'stress_level': 'Low',
+        'stress_icon': '🟢',
+        'caring_response': random.choice(responses[age_group]),
+        'tips': ["🌸 I'll be here when you return", "💫 Take care of yourself"]
+    }
+
+def bot_intro_response(age_group):
+    responses = {
+        "teen": [
+            "I'm Serenity! 🌸 Think of me as a caring friend who's always here to listen. You can tell me anything - about school, friends, stress, or whatever's on your mind. I'll never judge, only support. 💫",
+            "I'm your virtual companion! 😊 I'm here to listen when you're stressed, sad, happy, or just need someone to talk to. You can talk about anything with me. 🌸",
+            "I'm Serenity! 💕 I help with stress and emotions. Just chat with me like you would with a caring friend. I'm always here, 24/7, no judgment. 🌸"
+        ],
+        "young_adult": [
+            "I'm Serenity! 🌸 Think of me as a supportive companion for your emotional wellbeing. You can talk about work stress, relationships, anxiety, or just vent - I'm here to listen and support you. 💫",
+            "I'm your caring virtual friend! 😊 I help detect stress and emotions through conversation, and offer gentle support and tips. Whatever you're going through, I'm here. 🌸",
+            "I'm Serenity! 💕 A safe space to express your feelings. Talk about anything - career, relationships, life stress - and I'll respond with care and understanding. 🌸"
+        ],
+        "adult": [
+            "I'm Serenity! 🌸 I'm here to provide emotional support through conversation. Whether it's work pressure, family stress, or just needing someone to listen - I'm that someone. 💫",
+            "I'm your companion for emotional wellness. 😊 Share what's on your heart - I'll listen without judgment and offer gentle, caring responses. I'm always here. 🌸",
+            "I'm Serenity! 💕 Think of me as a caring friend who's available 24/7. Work stress, life challenges, emotional ups and downs - let's talk about it. 🌸"
+        ],
+        "senior": [
+            "I'm Serenity, dear! 🌸 I'm here to listen and chat with you. Whatever's on your heart - worries, memories, feelings - I'm here to share the moment with you. 💫",
+            "I'm your caring companion! 😊 Think of me as a friendly ear. You can tell me anything, and I'll always respond with kindness and understanding. 🌸",
+            "I'm Serenity! 💕 I'm here to keep you company and listen. Loneliness, worries, happy thoughts - share them with me. I'm always here, dear. 🌸"
+        ]
+    }
+    return {
+        'emotion': 'Introduction',
+        'stress_score': 1,
+        'stress_level': 'Low',
+        'stress_icon': '🟢',
+        'caring_response': random.choice(responses[age_group]),
+        'tips': ["🌸 I'm here 24/7", "💫 You can talk about anything", "🌟 No judgment, only care"]
+    }
+
+def help_response(age_group):
+    responses = {
+        "teen": [
+            "Of course I can help! 🌸 You can talk to me about stress, exams, friends, family - anything really. Just start typing and I'll listen and respond with care. 💫",
+            "I'm here to help! 😊 Tell me what's going on - I'll listen and offer support. You can talk about anything that's on your mind. 🌸",
+            "I'd love to help! 💕 Just share what's bothering you, or even what's making you happy. I'm here to listen and respond. 🌸"
+        ],
+        "young_adult": [
+            "I'm here to help however I can! 🌸 Talk to me about stress, work, relationships, anxiety - anything. I'll listen and respond with caring support. 💫",
+            "Of course! 😊 This is a safe space. Share whatever's on your mind - I'm here to listen and offer gentle guidance. 🌸",
+            "I'd be happy to help! 💕 Whether you need to vent, seek advice, or just chat - I'm here for you. What's on your mind? 🌸"
+        ],
+        "adult": [
+            "I'm here to help! 🌸 Work stress, family matters, emotional challenges - let's talk about it. I'll listen and support you. 💫",
+            "Of course! 😊 This is your space to share. Whatever you're dealing with, I'm here to listen without judgment. 🌸",
+            "I'd love to help! 💕 Tell me what's going on - I'll respond with care and maybe some gentle tips. You're not alone. 🌸"
+        ],
+        "senior": [
+            "I'm always here to help, dear! 🌸 Whatever's on your heart - share it with me. I'll listen with care and kindness. 💫",
+            "Of course! 😊 This is a safe place. Tell me what you need - a listening ear, comfort, or just someone to talk to. 🌸",
+            "I'd be honored to help, dear! 💕 What's on your mind today? I'm here to listen and share the moment with you. 🌸"
+        ]
+    }
+    return {
+        'emotion': 'Help',
+        'stress_score': 1,
+        'stress_level': 'Low',
+        'stress_icon': '🟢',
+        'caring_response': random.choice(responses[age_group]),
+        'tips': ["🌸 I'm here to listen", "💫 You're not alone", "🌟 Just start talking"]
+    }
+
 
 # ----------------------------------------------------------------------
 # HAPPINESS RESPONSES
