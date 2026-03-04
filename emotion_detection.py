@@ -80,7 +80,7 @@ def detect_emotion_and_respond(message, age=20):
     # -------------------------------------------------------------------
     # HAPPY / POSITIVE DETECTION
     # -------------------------------------------------------------------
-    happy_keywords = ['happy', 'good', 'great', 'wonderful', 'excellent', 'joy', 'glad', 'fantastic', 'amazing', 'love']
+    happy_keywords = ['happy', 'good', 'great', 'wonderful', 'excellent', 'joy', 'glad', 'fantastic', 'amazing', 'love', 'achievement', 'achievements', 'accomplishment', 'proud', 'success']
     for i, word in enumerate(words):
         if word in happy_keywords:
             if is_negated(i, words, word):
