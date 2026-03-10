@@ -15,6 +15,22 @@ def detect_emotion_and_respond(message, age=20):
         age_group = "senior"
     
     # -------------------------------------------------------------------
+    # CRISIS DETECTION - HIGHEST PRIORITY (Check FIRST)
+    # -------------------------------------------------------------------
+    crisis_phrases = [
+        'kill myself', 'kill me', 'end my life', 'end my life',
+        'want to die', 'better off dead', 'suicide', 'suicidal',
+        'harm myself', 'hurt myself', 'no reason to live',
+        'give up', 'can\'t go on', 'cannot go on', 'ending it all',
+        'worthless', 'i want to die', 'i wish i was dead',
+        'ready to die', 'end it all', 'stop living'
+    ]
+    
+    for phrase in crisis_phrases:
+        if phrase in message_lower:
+            return crisis_response(age_group)
+    
+    # -------------------------------------------------------------------
     # GENERAL CONVERSATION HANDLER - Check for common phrases FIRST
     # -------------------------------------------------------------------
     message_lower_no_punct = message_lower.replace('!', '').replace('?', '').replace('.', '').strip()
@@ -156,6 +172,63 @@ def detect_emotion_and_respond(message, age=20):
 # ======================================================================
 # RESPONSE POOLS - MULTIPLE VARIATIONS FOR EACH EMOTION AND AGE GROUP
 # ======================================================================
+
+# ----------------------------------------------------------------------
+# CRISIS RESPONSE - Life-saving support
+# ----------------------------------------------------------------------
+def crisis_response(age_group):
+    """Special response for users in crisis - provides helpline information"""
+    
+    # Base crisis message with helplines
+    crisis_message = """🚨 **I'm really concerned about what you're sharing.** 🤍
+
+Your feelings are valid and you deserve immediate support. Please reach out to professionals who can help right now:
+
+🇮🇳 **India Crisis Helplines:**
+• **AASRA:** 91-9820466726 (24x7, Toll-free: 1800-233-3330)
+• **iCall:** 9152987821 (Mon-Sat, 10am-8pm)
+• **Sneha India:** 044-24640050 (24x7)
+• **Vandrevala Foundation:** 9999666555 (24x7)
+• **Emergency:** 112
+
+🌐 **Online Resources:**
+• https://www.aasra.info
+• https://www.vandrevalafoundation.com
+
+💬 **You can also:**
+• Talk to a trusted friend or family member
+• Go to the nearest hospital emergency room
+• Call a mental health professional
+
+**You matter. There are people who want to help.** 💕
+
+Would you like me to stay here and chat, or help you find more resources?"""
+    
+    # Age-specific comforting additions
+    age_messages = {
+        "teen": "Sweetheart, I know things feel impossible right now, but this feeling won't last forever. Please reach out for help. Your life is precious. 🌸",
+        "young_adult": "I hear how much pain you're in. Your 20s can be overwhelming, but please don't face this alone. Reach out to these resources. 💫",
+        "adult": "The weight you're carrying is heavy, but you don't have to carry it alone. Please contact one of these services. You deserve support. 🌿",
+        "senior": "Dear, your life has so much value. Please reach out to these caring professionals who understand what you're going through. 💝"
+    }
+    
+    # Combine messages
+    full_message = f"{crisis_message}\n\n{age_messages.get(age_group, '')}"
+    
+    return {
+        'emotion': 'CRISIS - URGENT SUPPORT NEEDED',
+        'stress_score': 10,
+        'stress_level': 'CRITICAL',
+        'stress_icon': '🚨',
+        'caring_response': full_message,
+        'tips': [
+            "🚨 Call AASRA: 91-9820466726 (24x7)",
+            "📞 Emergency Helpline: 112",
+            "💬 Talk to someone you trust immediately",
+            "🏥 Go to the nearest hospital if you're in immediate danger"
+        ]
+    }
+
 
 # ----------------------------------------------------------------------
 # GENERAL CONVERSATION RESPONSES
