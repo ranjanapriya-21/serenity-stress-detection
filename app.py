@@ -561,6 +561,13 @@ def users():
     except Exception as e:
         logger.error(f"Users error: {e}")
         return "Users page error", 500
+# -------------------------------------------------------------------
+# Activities Page
+# -------------------------------------------------------------------
+@app.route('/activities')
+@login_required
+def activities():
+    return render_template('activities.html')
 
 # -------------------------------------------------------------------
 # Export User Data (Backup)

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto;">
+    
+    <!-- Header -->
+    <div style="background: white; border-radius: 40px; padding: 30px; text-align: center; box-shadow: 0 20px 40px rgba(183, 110, 121, 0.15); margin-bottom: 30px;">
+        <h1 style="color: #b76e79; font-size: 2.5rem; margin-bottom: 10px;">🌸 Happiness Activities</h1>
+        <p style="color: #8f7a7a; font-size: 1.1rem;">Try these activities based on your age group</p>
+    </div>
+    
+    <!-- Age Group Selector -->
+    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap;">
+        <button onclick="showAge('teen')" class="age-btn" style="background: #f9eef2; color: #b76e79; border: 2px solid #b76e79; padding: 10px 25px; border-radius: 30px; font-weight: 600; cursor: pointer;">🧒 Teens (13-17)</button>
+        <button onclick="showAge('young')" class="age-btn" style="background: #f9eef2; color: #b76e79; border: 2px solid #b76e79; padding: 10px 25px; border-radius: 30px; font-weight: 600; cursor: pointer;">👩‍🎓 Young Adults (18-29)</button>
+        <button onclick="showAge('adult')" class="age-btn" style="background: #f9eef2; color: #b76e79; border: 2px solid #b76e79; padding: 10px 25px; border-radius: 30px; font-weight: 600; cursor: pointer;">👨‍👩‍👧 Adults (30-50)</button>
+        <button onclick="showAge('senior')" class="age-btn" style="background: #f9eef2; color: #b76e79; border: 2px solid #b76e79; padding: 10px 25px; border-radius: 30px; font-weight: 600; cursor: pointer;">👵 Seniors (50+)</button>
+    </div>
+    
+    <!-- Activities Container -->
+    <div id="activities-container">
+        <!-- Will be filled by JavaScript -->
+    </div>
+    
+</div>
+
+<script>
+    const activities = {
+        teen: [
+            {
+                emoji: "🎵",
+                title: "Mood Booster Playlist",
+                description: "Listen to upbeat songs that lift your mood",
+                activity: "https://open.spotify.com/playlist/37i9dQZF1DX3rxVfibe1L0",
+                time: "5 mins"
+            },
+            {
+                emoji: "📸",
+                title: "Photo Challenge",
+                description: "Take 3 photos of things that made you smile today",
+                activity: "Open your camera app and capture moments of joy",
+                time: "10 mins"
+            },
+            {
+                emoji: "🧘",
+                title: "2-Minute Dance Break",
+                description: "Stand up and dance to your favorite song",
+                activity: "Play a song and dance freely for 2 minutes",
+                time: "2 mins"
+            }
+        ],
+        young: [
+            {
+                emoji: "☕",
+                title: "Virtual Coffee Break",
+                description: "Take 5 minutes to breathe and enjoy a quiet moment",
+                activity: "Make tea/coffee, sit quietly, and breathe deeply",
+                time: "5 mins"
+            },
+            {
+                emoji: "📋",
+                title: "Gratitude List",
+                description: "Write 3 things going well in your life right now",
+                activity: "Open notes app and list 3 good things",
+                time: "3 mins"
+            },
+            {
+                emoji: "💪",
+                title: "Desk Stretches",
+                description: "Simple stretches to release tension",
+                activity: "Roll shoulders, stretch neck, reach for the sky",
+                time: "5 mins"
+            }
+        ],
+        adult: [
+            {
+                emoji: "🌿",
+                title: "Guided Breathing",
+                description: "3-minute breathing exercise for calm",
+                activity: "Breathe in for 4, hold for 4, out for 4. Repeat 5 times.",
+                time: "3 mins"
+            },
+            {
+                emoji: "📝",
+                title: "What Went Well",
+                description: "Note 3 good things from today",
+                activity: "Write down 3 positive moments from your day",
+                time: "5 mins"
+            },
+            {
+                emoji: "💭",
+                title: "Positive Affirmations",
+                description: "Read affirmations for self-compassion",
+                activity: "Say to yourself: 'I am doing my best. I deserve peace.'",
+                time: "2 mins"
+            }
+        ],
+        senior: [
+            {
+                emoji: "📖",
+                title: "Memory Lane",
+                description: "Recall a happy memory from your past",
+                activity: "Think of a happy moment and write a few sentences about it",
+                time: "10 mins"
+            },
+            {
+                emoji: "🎶",
+                title: "Golden Oldies",
+                description: "Listen to songs from your younger days",
+                activity: "Search for songs from the 60s-80s on YouTube",
+                time: "15 mins"
+            },
+            {
+                emoji: "📞",
+                title: "Call Someone",
+                description: "Reach out to someone who would love to hear from you",
+                activity: "Call a friend or family member just to chat",
+                time: "10 mins"
+            }
+        ]
+    };
+    
+    function showAge(ageGroup) {
+        const container = document.getElementById('activities-container');
+        const ageActivities = activities[ageGroup];
+        
+        // Highlight active button
+        document.querySelectorAll('.age-btn').forEach(btn => {
+            btn.style.background = '#f9eef2';
+            btn.style.color = '#b76e79';
+        });
+        event.target.style.background = '#b76e79';
+        event.target.style.color = 'white';
+        
+        // Display activities
+        let html = '<div style="display: grid; gap: 20px;">';
+        
+        ageActivities.forEach(activity => {
+            html += `
+                <div style="background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 30px rgba(183, 110, 121, 0.1); display: flex; gap: 20px; align-items: center;">
+                    <div style="font-size: 3rem;">${activity.emoji}</div>
+                    <div style="flex: 1;">
+                        <h3 style="color: #b76e79; margin-bottom: 5px;">${activity.title}</h3>
+                        <p style="color: #8f7a7a; margin-bottom: 10px;">${activity.description}</p>
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <span style="background: #f9eef2; color: #b76e79; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;">⏱️ ${activity.time}</span>
+                            <span style="color: #b76e79; font-style: italic;">${activity.activity}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    // Show teen activities by default
+    window.onload = function() {
+        showAge('teen');
+    };
+</script>
+
+<style>
+    .age-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(183, 110, 121, 0.2);
+    }
+</style>
+{% endblock %}
